@@ -1,6 +1,6 @@
 # Arbitrum WETH/SWAPR Helper Vault
 
-Want is  WETH/SWAPR swprLP
+Want is WETH/SWAPR swprLP
 Earn Swapr
 Autocompounds 100%
 
@@ -75,15 +75,19 @@ This mix is configured for use with [Ganache](https://github.com/trufflesuite/ga
 7. Install the dependencies in the package
 
 ```
+
 ## Javascript dependencies
+
 npm i
 
 ## Python Dependencies
+
 pip install virtualenv
 virtualenv venv
 source venv/bin/activate
 pip install -r requirements.txt
-```
+
+````
 
 ## Basic Use
 
@@ -93,7 +97,7 @@ To deploy the demo Badger Strategy in a development environment:
 
 ```bash
   brownie console
-```
+````
 
 2. Run Scripts for Deployment
 
