@@ -1,4 +1,4 @@
-from brownie import network, BadgerRegistry, Controller, SettV3, web3
+from brownie import network, BadgerRegistry, Controller, SettV4, web3
 from config import REGISTRY
 from helpers.constants import AddressZero
 from rich.console import Console
@@ -102,7 +102,7 @@ def check_vaults_and_strategies(registry, proxyAdmin, authors):
     # Get strategies from vaults and check vaults' proxyAdmins
     for vault in vaults:
         try:
-            vaultContract = SettV3.at(vault)
+            vaultContract = SettV4.at(vault)
             # get Controller
             controller = Controller.at(vaultContract.controller())
             strategies.append(controller.strategies(vaultContract.token()))

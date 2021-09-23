@@ -2,7 +2,7 @@ from brownie import (
     accounts,
     interface,
     Controller,
-    SettV3,
+    SettV4,
     MyStrategy,
 )
 from config import (
@@ -33,7 +33,7 @@ def deployed():
     controller = Controller.deploy({"from": deployer})
     controller.initialize(BADGER_DEV_MULTISIG, strategist, keeper, BADGER_DEV_MULTISIG)
 
-    sett = SettV3.deploy({"from": deployer})
+    sett = SettV4.deploy({"from": deployer})
     sett.initialize(
         WANT,
         controller,

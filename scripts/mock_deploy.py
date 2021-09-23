@@ -37,7 +37,7 @@ def deploy():
     BADGER_DEV_MULTISIG
   )
 
-  sett = SettV3.deploy({"from": deployer})
+  sett = SettV4.deploy({"from": deployer})
   sett.initialize(
     WANT,
     controller,
