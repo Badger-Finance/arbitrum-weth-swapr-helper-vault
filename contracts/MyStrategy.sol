@@ -155,7 +155,7 @@ contract MyStrategy is BaseStrategy {
         IERC20StakingRewardsDistribution(stakingContract).exit(address(this));
 
         // Swap rewards into want
-        _swapRewardsToWant(); //TODO
+        _swapRewardsToWant();
     }
 
     /// @dev withdraw the specified amount of want, liquidate from lpComponent to want, paying off any necessary debt for the conversion
