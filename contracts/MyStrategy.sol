@@ -179,7 +179,7 @@ contract MyStrategy is BaseStrategy {
         _onlyAuthorizedActors();
 
         uint256 _before = IERC20Upgradeable(want).balanceOf(address(this));
-        
+
         // Claim rewards
         IERC20StakingRewardsDistribution(stakingContract).claimAll(
             address(this)
@@ -194,7 +194,7 @@ contract MyStrategy is BaseStrategy {
 
         /// @notice Keep this in so you get paid!
         (uint256 governancePerformanceFee, uint256 strategistPerformanceFee) =
-            _processRewardsFees(harvested, reward);
+            _processRewardsFees(harvested, want);
 
         /// @dev Harvest event that every strategy MUST have, see BaseStrategy
         emit Harvest(harvested, block.number);
