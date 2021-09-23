@@ -79,14 +79,34 @@ def deployed():
     controller.approveStrategy(WANT, strategy, {"from": governance})
     controller.setStrategy(WANT, strategy, {"from": deployer})
 
-    ## Uniswap some tokens here
-    router = interface.IUniswapRouterV2("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+    ## Get some WETH
+    WETH = interface.IERC20(strategy.WETH())
+    WETH_DEP = interface.IWETH(strategy.WETH())
+    WETH_DEP.deposit({"from": deployer, "value": 5000000000000000000})
+
+    ## Get some SWAPR
+    router = interface.IUniswapRouterV2(strategy.DX_SWAP_ROUTER())
+    SWAPR = interface.IERC20(strategy.reward())
     router.swapExactETHForTokens(
         0,  ## Mint out
-        ["0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", WANT],
+        [WETH, SWAPR],
         deployer,
         9999999999999999,
         {"from": deployer, "value": 5000000000000000000},
+    )
+
+    WETH.approve(router, WETH.balanceOf(deployer), {"from": deployer})
+    SWAPR.approve(router, SWAPR.balanceOf(deployer), {"from": deployer})
+    router.addLiquidity(
+        WETH,
+        SWAPR,
+        WETH.balanceOf(deployer),
+        SWAPR.balanceOf(deployer),
+        0,
+        0,
+        deployer,
+        9999999999999999,
+        {"from": deployer},
     )
 
     return DotMap(
@@ -159,3 +179,9 @@ def settKeeper(vault):
 @pytest.fixture
 def strategyKeeper(strategy):
     return accounts.at(strategy.keeper(), force=True)
+
+
+## Forces reset before each test
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
