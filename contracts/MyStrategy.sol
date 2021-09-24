@@ -91,8 +91,13 @@ contract MyStrategy is BaseStrategy {
     /// @notice this method is "safe" only if governance is a timelock
     function setStakingContract(address newStakingAddress) external {
         _onlyGovernance();
-        // Withdraw from old stakingContract
-        IERC20StakingRewardsDistribution(stakingContract).exit(address(this));
+
+        if (balanceOfPool() > 0) {
+            // Withdraw from old stakingContract
+            IERC20StakingRewardsDistribution(stakingContract).exit(
+                address(this)
+            );
+        }
 
         // Remove approvals to old stakingContract
         IERC20Upgradeable(want).safeApprove(stakingContract, 0);
@@ -103,10 +108,12 @@ contract MyStrategy is BaseStrategy {
         // Add approvals to new stakingContract
         IERC20Upgradeable(want).safeApprove(stakingContract, type(uint256).max);
 
-        // Deposit all in new stakingContract
-        IERC20StakingRewardsDistribution(stakingContract).stake(
-            IERC20Upgradeable(want).balanceOf(address(this))
-        );
+        if (balanceOfWant() > 0) {
+            // Deposit all in new stakingContract
+            IERC20StakingRewardsDistribution(stakingContract).stake(
+                balanceOfWant()
+            );
+        }
     }
 
     /// ===== View Functions =====
