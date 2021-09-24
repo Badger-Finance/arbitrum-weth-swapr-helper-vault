@@ -32,9 +32,8 @@ contract MyStrategy is BaseStrategy {
     IUniswapRouterV2 public constant DX_SWAP_ROUTER =
         IUniswapRouterV2(0x530476d5583724A89c8841eB6Da76E7Af4C0F17E);
 
-    // Can be changed by governance via setStakingContract
-    // TODO: CHANGE TO WETH/SWAPR ADDRESS
-    address public stakingContract = 0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17;
+    // Set in initialize, can be changed by governance via setStakingContract
+    address public stakingContract;
 
     // Used to signal to the Badger Tree that rewards where sent to it
     event TreeDistribution(
@@ -69,6 +68,8 @@ contract MyStrategy is BaseStrategy {
         performanceFeeStrategist = _feeConfig[1];
         withdrawalFee = _feeConfig[2];
 
+        stakingContract = 0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17; // Set it here because of proxyLogic
+
         /// @dev do one off approvals here
         // TODO: CHANGE SLIGHTLY
 
@@ -84,6 +85,28 @@ contract MyStrategy is BaseStrategy {
 
         // Approval for deposit
         IERC20Upgradeable(want).safeApprove(stakingContract, type(uint256).max);
+    }
+
+    /// @dev Governance Set new stakingContract Function
+    /// @notice this method is "safe" only if governance is a timelock
+    function setStakingContract(address newStakingAddress) external {
+        _onlyGovernance();
+        // Withdraw from old stakingContract
+        IERC20StakingRewardsDistribution(stakingContract).exit(address(this));
+
+        // Remove approvals to old stakingContract
+        IERC20Upgradeable(want).safeApprove(stakingContract, 0);
+
+        // Set new stakingContract
+        stakingContract = newStakingAddress;
+
+        // Add approvals to new stakingContract
+        IERC20Upgradeable(want).safeApprove(stakingContract, type(uint256).max);
+
+        // Deposit all in new stakingContract
+        IERC20StakingRewardsDistribution(stakingContract).stake(
+            IERC20Upgradeable(want).balanceOf(address(this))
+        );
     }
 
     /// ===== View Functions =====
@@ -164,14 +187,22 @@ contract MyStrategy is BaseStrategy {
         override
         returns (uint256)
     {
-        // Avoids reverts due to rounding / trying to withdraw slighly too much
-        // safe because of controller slippage check
-        if (_amount > balanceOfPool()) {
-            _amount = balanceOfPool();
-        }
-        IERC20StakingRewardsDistribution(stakingContract).withdraw(_amount);
+        // Due to rounding errors on the Controller, the amount may be slightly higher than the available amount in edge cases.
+        if (balanceOfWant() < _amount) {
+            uint256 toWithdraw = _amount.sub(balanceOfWant());
 
-        return _amount;
+            if (balanceOfPool() < toWithdraw) {
+                IERC20StakingRewardsDistribution(stakingContract).withdraw(
+                    balanceOfPool()
+                );
+            } else {
+                IERC20StakingRewardsDistribution(stakingContract).withdraw(
+                    toWithdraw
+                );
+            }
+        }
+
+        return MathUpgradeable.min(_amount, balanceOfWant());
     }
 
     /// @dev Harvest from strategy mechanics, realizing increase in underlying position

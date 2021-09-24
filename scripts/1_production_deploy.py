@@ -48,28 +48,13 @@ def main():
     assert proxyAdmin != AddressZero
 
     # Deploy controller
-    controller = deploy_controller(dev, proxyAdmin)
+    controller = Controller.at("0x72Ac086A5d7e1221a6D47438C45ED199E9bff423")
 
     # Deploy Vault
-    vault = deploy_vault(
-        controller.address,
-        dev.address,  # Deployer will be set as governance for testing stage
-        keeper,
-        guardian,
-        dev,
-        proxyAdmin,
-    )
+    vault = SettV4.at("0x5f403059994db2b6a0bE9e87D4865B65176F16D9")
 
     # Deploy Strategy
-    strategy = deploy_strategy(
-        controller.address,
-        dev.address,  # Deployer will be set as governance for testing stage
-        strategist,
-        keeper,
-        guardian,
-        dev,
-        proxyAdmin,
-    )
+    strategy = MyStrategy.at("0x2F054176c888A4469797bE1E389997e6BB040950")
 
     # Wire up vault and strategy to test controller
     wire_up_test_controller(controller, vault, strategy, dev)

@@ -11,5 +11,16 @@ from helpers.time import days
 """
 
 
-def test_my_custom_test(deployed):
-    assert True  ## No need for custom tests
+def test_my_custom_test(deployer, sett, strategy, want):
+    old_staking_contract = strategy.stakingContract()
+
+    new_staking = "0x281979D31844FF4cc6d94dAf8D78EE293561EfFf" ## Random Address
+
+    with brownie.reverts("onlyGovernance"):
+      strategy.setStakingContract(new_staking, {"from": deployer}) 
+
+    governance = accounts.at(strategy.governance(), force=True)
+    strategy.setStakingContract(new_staking, {"from": governance}) 
+
+    assert strategy.stakingContract() != old_staking_contract
+
