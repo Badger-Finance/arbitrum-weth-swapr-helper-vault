@@ -34,6 +34,7 @@ contract MyStrategy is BaseStrategy {
 
     // Set in initialize, can be changed by governance via setStakingContract
     address public stakingContract;
+    bool public autocompoundOnWithdrawAll; // Should we swap rewards to want in withdrawAll? // False by default
 
     // Used to signal to the Badger Tree that rewards where sent to it
     event TreeDistribution(
@@ -92,6 +93,8 @@ contract MyStrategy is BaseStrategy {
     function setStakingContract(address newStakingAddress) external {
         _onlyGovernance();
 
+        require(newStakingAddress != address(0));
+
         if (balanceOfPool() > 0) {
             // Withdraw from old stakingContract
             IERC20StakingRewardsDistribution(stakingContract).exit(
@@ -114,6 +117,13 @@ contract MyStrategy is BaseStrategy {
                 balanceOfWant()
             );
         }
+    }
+
+    function setAutocompoundOnWithdrawAll(bool newAutocompoundOnWithdrawAll)
+        public
+    {
+        _onlyGovernance();
+        autocompoundOnWithdrawAll = newAutocompoundOnWithdrawAll;
     }
 
     /// ===== View Functions =====
@@ -184,8 +194,11 @@ contract MyStrategy is BaseStrategy {
         // Withdraws all and claims rewards
         IERC20StakingRewardsDistribution(stakingContract).exit(address(this));
 
-        // Swap rewards into want
-        _swapRewardsToWant();
+        // False by default
+        if (autocompoundOnWithdrawAll) {
+            // Swap rewards into want
+            _swapRewardsToWant();
+        }
     }
 
     /// @dev withdraw the specified amount of want, liquidate from lpComponent to want, paying off any necessary debt for the conversion
