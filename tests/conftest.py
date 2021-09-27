@@ -67,6 +67,9 @@ def deployed():
         FEES,
     )
 
+    strategy.setStakingContract("0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17", {"from": governance})
+
+
     ## Tool that verifies bytecode (run independently) <- Webapp for anyone to verify
 
     ## Set up tokens

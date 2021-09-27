@@ -69,11 +69,7 @@ contract MyStrategy is BaseStrategy {
         performanceFeeStrategist = _feeConfig[1];
         withdrawalFee = _feeConfig[2];
 
-        stakingContract = 0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17; // Set it here because of proxyLogic
-
         /// @dev do one off approvals here
-        // TODO: CHANGE SLIGHTLY
-
         // Approvals for swaps and LP
         IERC20Upgradeable(reward).safeApprove(
             address(DX_SWAP_ROUTER),
@@ -95,15 +91,15 @@ contract MyStrategy is BaseStrategy {
 
         require(newStakingAddress != address(0));
 
-        if (balanceOfPool() > 0) {
-            // Withdraw from old stakingContract
-            IERC20StakingRewardsDistribution(stakingContract).exit(
-                address(this)
-            );
+        if (stakingContract != address(0)) {
+            if (balanceOfPool() > 0) {
+                // Withdraw from old stakingContract
+                IERC20StakingRewardsDistribution(stakingContract).exit(
+                    address(this)
+                );
+            }
+            IERC20Upgradeable(want).safeApprove(stakingContract, 0);
         }
-
-        // Remove approvals to old stakingContract
-        IERC20Upgradeable(want).safeApprove(stakingContract, 0);
 
         // Set new stakingContract
         stakingContract = newStakingAddress;

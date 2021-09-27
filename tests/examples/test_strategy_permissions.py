@@ -3,7 +3,12 @@ from brownie import *
 from helpers.constants import MaxUint256, AddressZero
 from helpers.SnapshotManager import SnapshotManager
 from helpers.time import days
+import pytest
 
+## Forces reset before each test
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass
 
 def state_setup(deployer, sett, controller, strategy, want):
     startingBalance = want.balanceOf(deployer)

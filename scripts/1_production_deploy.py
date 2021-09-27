@@ -48,17 +48,10 @@ def main():
     assert proxyAdmin != AddressZero
 
     # Deploy controller
-    controller = deploy_controller(dev, proxyAdmin)
+    controller = Controller.at("0x0Ab7aEc23C0224fE48FfC976bbb8E6f461bff81b")
 
     # Deploy Vault
-    vault = deploy_vault(
-        controller.address,
-        dev.address,  # Deployer will be set as governance for testing stage
-        keeper,
-        guardian,
-        dev,
-        proxyAdmin,
-    )
+    vault = SettV4.at("0x0c2153e8aE4DB8233c61717cDC4c75630E952561")
 
     # Deploy Strategy
     strategy = deploy_strategy(
@@ -78,7 +71,7 @@ def main():
 def deploy_controller(dev, proxyAdmin):
 
     controller_logic = Controller.at(
-        "0x01d10fdc6b484BE380144dF12EB6C75387EfC49B"
+        "0x30bCE7386e016D6038201F57D1bA52CbA7AEFeCf"
     )  # Controller Logic
 
     # Deployer address will be used for all actors as controller will only be used for testing
@@ -123,8 +116,8 @@ def deploy_vault(controller, governance, keeper, guardian, dev, proxyAdmin):
 
     print("Vault Arguments: ", args)
 
-    vault_logic = SettV4.at(
-        "0xAF0B504BD20626d1fd57F8903898168FCE7ecbc8"
+    vault_logic = SettV4.deploy(
+        {"from": dev}
     )  # SettV4 Logic
 
     vault_proxy = AdminUpgradeabilityProxy.deploy(
@@ -134,6 +127,7 @@ def deploy_vault(controller, governance, keeper, guardian, dev, proxyAdmin):
         {"from": dev},
     )
     time.sleep(sleep_between_tx)
+    console.print("[green]Vault Logic was deployed at: [/green]", vault_proxy.address)
 
     ## We delete from deploy and then fetch again so we can interact
     AdminUpgradeabilityProxy.remove(vault_proxy)
@@ -166,8 +160,7 @@ def deploy_strategy(
 
     print("Strategy Arguments: ", args)
 
-    strat_logic = MyStrategy.deploy({"from": dev})
-    time.sleep(sleep_between_tx)
+    strat_logic = MyStrategy.at("0xcBaE8C781a86E8Fda98E190bCC95B8690D4544FC")
 
     strat_proxy = AdminUpgradeabilityProxy.deploy(
         strat_logic,
@@ -182,6 +175,10 @@ def deploy_strategy(
     strat_proxy = MyStrategy.at(strat_proxy.address)
 
     console.print("[green]Strategy was deployed at: [/green]", strat_proxy.address)
+
+    strat_proxy.setStakingContract("0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17", {"from": dev})
+    console.print("[green]strategy setStakingContract was deployed at: [/green]", "0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17")
+
 
     return strat_proxy
 
