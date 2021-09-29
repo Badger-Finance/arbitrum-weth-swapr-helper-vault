@@ -24,12 +24,12 @@ def state_setup(deployer, sett, controller, strategy, want):
     want.approve(sett, MaxUint256, {"from": deployer})
     sett.deposit(depositAmount, {"from": deployer})
 
-    chain.sleep(days(1))
+    chain.sleep(100)
     chain.mine()
 
     sett.earn({"from": settKeeper})
 
-    chain.sleep(days(1))
+    chain.sleep(100)
     chain.mine()
 
     if tendable:
@@ -37,7 +37,7 @@ def state_setup(deployer, sett, controller, strategy, want):
 
     strategy.harvest({"from": strategyKeeper})
 
-    chain.sleep(days(1))
+    chain.sleep(100)
     chain.mine()
 
     accounts.at(deployer, force=True)
