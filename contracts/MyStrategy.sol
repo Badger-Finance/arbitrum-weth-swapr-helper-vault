@@ -96,9 +96,7 @@ contract MyStrategy is BaseStrategy {
         if (stakingContract != address(0)) {
             if (balanceOfPool() > 0) {
                 // Withdraw from old stakingContract
-                IERC20StakingRewardsDistribution(stakingContract).exit(
-                    address(this)
-                );
+                _withdrawAll();
             }
             IERC20Upgradeable(want).safeApprove(stakingContract, 0);
         }
@@ -109,10 +107,11 @@ contract MyStrategy is BaseStrategy {
         // Add approvals to new stakingContract
         IERC20Upgradeable(want).safeApprove(stakingContract, type(uint256).max);
 
-        if (balanceOfWant() > 0) {
+        uint256 balanceOfWant = balanceOfWant();
+        if (balanceOfWant > 0) {
             // Deposit all in new stakingContract
             IERC20StakingRewardsDistribution(stakingContract).stake(
-                balanceOfWant()
+                balanceOfWant
             );
         }
     }
@@ -291,12 +290,10 @@ contract MyStrategy is BaseStrategy {
     /// @dev If any want is uninvested, let's invest here
     function tend() external whenNotPaused {
         _onlyAuthorizedActors();
-
-        if (IERC20Upgradeable(want).balanceOf(address(this)) > 0) {
+        uint256 balanceOfWant = balanceOfWant();
+        if (balanceOfWant > 0) {
             // NOTE: This will revert if staking has ended, just change to next staking contract
-            IERC20StakingRewardsDistribution(stakingContract).stake(
-                IERC20Upgradeable(want).balanceOf(address(this))
-            );
+            _deposit(balanceOfWant);
         }
     }
 
