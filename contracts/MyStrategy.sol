@@ -69,6 +69,8 @@ contract MyStrategy is BaseStrategy {
         performanceFeeStrategist = _feeConfig[1];
         withdrawalFee = _feeConfig[2];
 
+        stakingContract = 0xe2A7CF0DEB83F2BC2FD15133a02A24B9981f2c17; // Current deployment was lacking this
+
         /// @dev do one off approvals here
         // Approvals for swaps and LP
         IERC20Upgradeable(reward).safeApprove(
@@ -204,12 +206,15 @@ contract MyStrategy is BaseStrategy {
         returns (uint256)
     {
         // Due to rounding errors on the Controller, the amount may be slightly higher than the available amount in edge cases.
-        if (balanceOfWant() < _amount) {
+        uint256 wantBalance = balanceOfWant();
+
+        if (wantBalance < _amount) {
             uint256 toWithdraw = _amount.sub(balanceOfWant());
 
-            if (balanceOfPool() < toWithdraw) {
+            uint256 poolBalance = balanceOfPool();
+            if (poolBalance < toWithdraw) {
                 IERC20StakingRewardsDistribution(stakingContract).withdraw(
-                    balanceOfPool()
+                    poolBalance
                 );
             } else {
                 IERC20StakingRewardsDistribution(stakingContract).withdraw(
