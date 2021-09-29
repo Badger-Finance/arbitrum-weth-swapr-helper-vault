@@ -110,9 +110,7 @@ contract MyStrategy is BaseStrategy {
         uint256 balanceOfWant = balanceOfWant();
         if (balanceOfWant > 0) {
             // Deposit all in new stakingContract
-            IERC20StakingRewardsDistribution(stakingContract).stake(
-                balanceOfWant
-            );
+            _deposit(balanceOfWant);
         }
     }
 
