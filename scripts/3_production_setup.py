@@ -34,8 +34,8 @@ def main():
     dev = connect_account()
 
     # Add deployed Strategy and Vault contracts here:
-    strategy = MyStrategy.at("0x809990849D53a5109e0cb9C446137793B9f6f1Eb")
-    vault = SettV4.at("0x6B2d4c4bb50274c5D4986Ff678cC971c0260E967")
+    strategy = MyStrategy.at("0x85386C3cE0679b035a9F8F17f531C076d0b35954")
+    vault = SettV4.at("0x0c2153e8aE4DB8233c61717cDC4c75630E952561")
 
     assert strategy.paused() == False
     assert vault.paused() == False
