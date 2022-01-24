@@ -9,14 +9,25 @@ def strat_proxy(Contract):
 
 
 @pytest.fixture
+def dev(accounts):
+    yield accounts[0]
+
+
+@pytest.fixture
+def new_logic(Contract):  # MyStrategy, dev
+    # logic = MyStrategy.deploy({"from": dev})
+    logic = Contract.from_explorer("0x37d9D2C6035b744849C15F1BFEE8F268a20fCBd8")
+    yield logic
+
+
+@pytest.fixture
 def proxy_admin(strat_proxy, web3, Contract):
     # ADMIN_SLOT = bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1)
     ADMIN_SLOT = 0xB53127684A568B3173AE13B9F8A6016E243E63B6E8EE1178D6A717850B5D6103
     yield Contract(web3.eth.getStorageAt(strat_proxy.address, ADMIN_SLOT)[12:])
 
 
-def test_upgrade(accounts, interface, strat_proxy, proxy_admin):
-    deployer = accounts[0]
+def test_upgrade(interface, strat_proxy, new_logic, proxy_admin):
     controller = interface.IController(strat_proxy.controller())
     want = interface.IERC20(strat_proxy.want())
     vault = interface.ISett(controller.vaults(want))
@@ -63,7 +74,6 @@ def test_upgrade(accounts, interface, strat_proxy, proxy_admin):
     stakingContract = strat_proxy.stakingContract()
 
     ## Upgrade
-    new_logic = MyStrategy.deploy({"from": deployer})
     owner = proxy_admin.owner()
     proxy_admin.upgrade(strat_proxy, new_logic, {"from": owner})
     print(f"Proxy admin: {proxy_admin.address}")
